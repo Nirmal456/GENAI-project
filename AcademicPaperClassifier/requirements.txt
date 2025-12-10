@@ -1,0 +1,8 @@
+flask
+flask-jwt-extended
+werkzeug
+transformers
+torch
+numpy
+pandas
+nltk

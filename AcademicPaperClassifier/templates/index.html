@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Academic Paper Abstract Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="page">
+      <div class="container">
+
+        <header class="header">
+          <div class="logo-container">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h1 class="main-header">Academic Paper Abstract Classifier</h1>
+          <p class="sub-header">Powered by transformer-based AI to automatically classify and analyze academic abstracts</p>
+          
+          <div class="user-info">
+            <span class="welcome-text">Welcome, <strong>{{ username }}</strong></span>
+            <button onclick="handleLogout()" class="btn-logout">
+              <svg class="logout-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Logout
+            </button>
+          </div>
+        </header>
+
+        <div class="layout">
+          <div class="left">
+            <div class="card">
+              <h3 class="card-title">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Enter Academic Abstract
+              </h3>
+
+              <form action="/predict" method="post">
+
+                <label for="sample_select" class="input-label">Try a sample abstract</label>
+                <select id="sample_select" name="sample_select" class="custom-select">
+                  {% for k in sample_options.keys() %}
+                    <option value="{{ k }}">{{ k }}</option>
+                  {% endfor %}
+                </select>
+
+                <label for="abstract" class="input-label">Paste your abstract here</label>
+                <textarea id="abstract" name="abstract" placeholder="Example: This paper investigates the application of deep learning techniques in natural language processing. We propose a novel architecture that combines transformer models with attention mechanisms to improve classification accuracy..." rows="10">{{ abstract }}</textarea>
+                <div class="char-counter">
+                  <span id="charCount">0</span> characters
+                </div>
+
+                <div class="controls">
+                  <button type="submit" class="btn-primary">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Classify Abstract
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="clearText()">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Clear
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="right">
+            <div class="card">
+              <h3 class="card-title">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Classification Result
+              </h3>
+
+              {% if warning %}
+                <div class="warning">
+                  <svg class="alert-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  {{ warning }}
+                </div>
+              {% endif %}
+
+              {% if field_code %}
+                <div class="field-box">
+                  <div class="field-header">
+                    <svg class="field-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Field Detection
+                  </div>
+                  <div class="field-item">
+                    <span class="field-label">Field Code:</span>
+                    <span class="field-value">{{ field_code }}</span>
+                  </div>
+                  <div class="field-item">
+                    <span class="field-label">Domain:</span>
+                    <span class="field-value">{{ field_name }}</span>
+                  </div>
+                </div>
+              {% endif %}
+
+              {% if label %}
+                <div class="result-section">
+                  <div class="sentiment-badge {{ label.lower() }}">
+                    {% if label.lower() == 'positive' %}
+                      <svg class="badge-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    {% else %}
+                      <svg class="badge-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    {% endif %}
+                  </div>
+                  <div class="sentiment-title">Sentiment Analysis</div>
+                  <h2 class="sentiment-label">{{ label }}</h2>
+                  <div class="confidence-container">
+                    <div class="confidence-label">Confidence Score</div>
+                    <div class="confidence-bar">
+                      <div class="confidence-fill" style="width: {{ confidence }}%"></div>
+                    </div>
+                    <div class="confidence-value">{{ confidence }}%</div>
+                  </div>
+                </div>
+                <div class="success-note">
+                  <svg class="success-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  Classification complete!
+                </div>
+              {% else %}
+                <div class="info">
+                  <svg class="info-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <div>
+                    <strong>Ready to classify</strong>
+                    <p>Enter an abstract on the left and click 'Classify Abstract' to get started.</p>
+                  </div>
+                </div>
+              {% endif %}
+
+            </div>
+          </div>
+        </div>
+
+        <footer class="footer">
+          <div class="footer-content">
+            <div class="footer-badge">
+              <svg class="footer-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              Powered by Hugging Face Transformers
+            </div>
+            <div class="footer-model">
+              Model: <code>distilbert-base-uncased-finetuned-sst-2-english</code>
+            </div>
+          </div>
+        </footer>
+
+      </div>
+    </div>
+
+    <script>
+      function clearText() {
+        document.getElementById("abstract").value = "";
+        document.getElementById("sample_select").selectedIndex = 0;
+        updateCharCount();
+      }
+
+      function updateCharCount() {
+        const textarea = document.getElementById("abstract");
+        const charCount = document.getElementById("charCount");
+        charCount.textContent = textarea.value.length;
+      }
+
+      async function handleLogout() {
+        try {
+          const response = await fetch('/api/logout', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          });
+
+          if (response.ok) {
+            window.location.href = '/login';
+          }
+        } catch (error) {
+          console.error('Logout error:', error);
+          window.location.href = '/login';
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const textarea = document.getElementById("abstract");
+        textarea.addEventListener('input', updateCharCount);
+        updateCharCount();
+      });
+    </script>
+  </body>
+</html>
